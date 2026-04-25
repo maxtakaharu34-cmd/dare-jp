@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#1a0030" />
+<title>真実か挑戦か</title>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{font-family:"Kosugi Maru",system-ui,sans-serif;color:#fff;background:linear-gradient(180deg,#3a0040,#08010f);touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent}
+#app{display:flex;flex-direction:column;height:100dvh;padding:14px;gap:12px;max-width:480px;margin:0 auto;align-items:center}
+.title{font-family:"Mochiy Pop P One",sans-serif;font-size:24px;color:#ffe066;-webkit-text-stroke:3px #000;paint-order:stroke fill;text-shadow:3px 3px 0 #ff5fa2;margin:8px 0;transform:rotate(-2deg)}
+.sub{font-size:12px;opacity:.85;text-align:center;line-height:1.6}
+.mode-row{display:flex;gap:8px;background:rgba(0,0,0,.4);border:2px solid #ffe066;border-radius:999px;padding:4px}
+.mode-btn{background:transparent;border:0;color:#fff;padding:8px 14px;font-family:"Mochiy Pop P One",sans-serif;font-size:13px;cursor:pointer;border-radius:999px}
+.mode-btn.on{background:#ffe066;color:#3a0040}
+.card-area{flex:1;width:100%;display:flex;align-items:center;justify-content:center;perspective:800px}
+.card{width:100%;max-width:360px;aspect-ratio:3/4;border-radius:18px;background:linear-gradient(135deg,#4a1f6e,#15082a);border:4px solid #ffe066;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;box-shadow:0 0 20px rgba(255,224,102,.4);position:relative;transform-style:preserve-3d;transition:transform .5s}
+.card.flip{transform:rotateY(180deg)}
+.card .face,.card .back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.card .back{background:linear-gradient(135deg,#4a1f6e,#15082a);font-family:"Mochiy Pop P One",sans-serif;color:#ffe066}
+.card .back .em{font-size:80px}
+.card .back .ttl{font-size:18px;margin-top:10px;letter-spacing:.1em}
+.card .face{background:linear-gradient(180deg,#fff5f8,#ffe5ee);color:#3a0040;transform:rotateY(180deg)}
+.card .face .kind{font-family:"Mochiy Pop P One",sans-serif;font-size:14px;background:#ff5fa2;color:#fff;padding:4px 14px;border-radius:999px}
+.card .face .text{font-family:"Mochiy Pop P One",sans-serif;font-size:18px;line-height:1.5;margin-top:14px;padding:0 8px}
+.actions{display:flex;gap:8px;width:100%;justify-content:center}
+.actions button{background:#ffe066;color:#000;border:3px solid #000;padding:14px 24px;font-family:"Mochiy Pop P One",sans-serif;font-size:16px;border-radius:999px;cursor:pointer;box-shadow:3px 3px 0 #000;animation:pulse 1.4s ease-in-out infinite}
+.actions .skip{background:#fff;animation:none}
+.actions button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.note{font-size:9px;opacity:.65;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+<h1 class="title">真実か挑戦か</h1>
+<div class="sub">飲み会・パーティーで使えるカードゲーム</div>
+<div class="mode-row">
+  <button class="mode-btn on" data-mode="any">ぜんぶ</button>
+  <button class="mode-btn" data-mode="truth">😶 真実だけ</button>
+  <button class="mode-btn" data-mode="dare">😈 挑戦だけ</button>
+  <button class="mode-btn" data-mode="spicy">🌶 辛口</button>
+</div>
+<div class="card-area">
+  <div class="card" id="card">
+    <div class="back"><div class="em">🎴</div><div class="ttl">タップして引く</div></div>
+    <div class="face"><div class="kind" id="kind">真実</div><div class="text" id="text">—</div></div>
+  </div>
+</div>
+<div class="actions">
+  <button id="btn-draw">🎴 引く</button>
+  <button class="skip" id="btn-skip">⏭ スキップ</button>
+</div>
+<div class="note">※「辛口」は18禁要素はないけど少し恥ずかしい質問あり</div>
+</div>
+<script>
+(()=>{
+'use strict';
+const TRUTH=[
+'初恋はいつ？','人生で一番の失敗は？','スマホの待ち受けは？','一番好きな食べ物は？','嫌いな芸能人は？',
+'最後に泣いたのはいつ？','昨日何時に寝た？','初めて告白したときのセリフは？','飼ってみたい動物は？','行きたい国は？',
+'最後についた嘘は？','学生時代のあだ名は？','好きなタイプは？','人生最大の散財は？','秘密にしてる趣味は？',
+'親に内緒の事ある？','カラオケの十八番は？','初めて買ったCDは？','子供の頃の夢は？','一番恥ずかしい思い出は？',
+'最近笑った瞬間は？','財布に今いくら？','スマホのロック画面の写真は？','尊敬する人は？','3秒後に思いつく好きな曲は？'
+];
+const DARE=[
+'スマホの最新通知を全員に見せて','変顔3秒キープ','腕立て5回','相手の似顔絵を5秒で描いて','左隣の人の好きなところを言って',
+'隣の人をハグ','犬のモノマネ','歌のサビを大声で歌う','その場でジャンプ10回','早口言葉「東京特許許可局」3回',
+'だじゃれを1つ言う','つぶやきの最新10件読み上げ','変な顔で自撮り','3秒で笑わせて','片足立ちで30秒',
+'好きな人にメッセージ送る（送信する勇気）','30秒目を閉じて喋り続ける','英語で1分自己紹介','その場で踊る','大きいくしゃみマネ'
+];
+const SPICY=[
+'今までで一番大胆だったデートの場所は？','今好きな人イニシャル','元カレ/カノの数','一番後悔してる選択は？','親に絶対バレたくない秘密は？',
+'今いちばん欲しいもの本気で言って','人生で一番の浪費','最近見た夢の内容','ここにいる人で一番タイプなのは？','30歳までにしたいこと'
+];
+const $=(id)=>document.getElementById(id);
+let mode='any';
+document.querySelectorAll('.mode-btn').forEach(b=>b.addEventListener('click',()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('.mode-btn').forEach(x=>x.classList.toggle('on',x===b));
+}));
+function draw(){
+  let pool=[];
+  if(mode==='any'){pool=[...TRUTH.map(t=>({k:'truth',t})),...DARE.map(t=>({k:'dare',t}))]}
+  else if(mode==='truth')pool=TRUTH.map(t=>({k:'truth',t}));
+  else if(mode==='dare')pool=DARE.map(t=>({k:'dare',t}));
+  else if(mode==='spicy')pool=SPICY.map(t=>({k:'spicy',t}));
+  const p=pool[Math.floor(Math.random()*pool.length)];
+  const card=$('card');
+  // flip back first
+  card.classList.remove('flip');
+  setTimeout(()=>{
+    $('kind').textContent=p.k==='truth'?'😶 真実':p.k==='dare'?'😈 挑戦':'🌶 辛口';
+    $('kind').style.background=p.k==='truth'?'#5fc4ff':p.k==='dare'?'#ff8855':'#ff5fa2';
+    $('text').textContent=p.t;
+    card.classList.add('flip');
+  },300);
+  beep(p.k==='truth'?660:p.k==='dare'?440:880,.18,'square',.13);
+}
+let ac=null;const en=()=>{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+const beep=(f,d,t='square',g=.1)=>{const a=en();const o=a.createOscillator();const gn=a.createGain();o.type=t;o.frequency.value=f;gn.gain.value=g;gn.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.connect(gn).connect(a.destination);o.start();o.stop(a.currentTime+d)};
+$('btn-draw').addEventListener('click',()=>{en();draw()});
+$('btn-skip').addEventListener('click',()=>{en();draw()});
+$('card').addEventListener('click',()=>{en();draw()});
+})();
+</script>
+</body>
+</html>
